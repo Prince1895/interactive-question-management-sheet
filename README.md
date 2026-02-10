@@ -56,7 +56,7 @@ An advanced, high-performance hierarchical Single Page Application (SPA) designe
 ### Installation
 1.  **Clone the repository**:
     ```bash
-    git clone [git@github.com:Prince1895/interactive-question-management-sheet.git](git@github.com:Prince1895/interactive-question-management-sheet.git)
+    git clone (git@github.com:Prince1895/interactive-question-management-sheet.git)
     cd smart-question-sheet
     ```
 
