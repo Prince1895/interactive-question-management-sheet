@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-// At the top with other imports
-import { sampleData } from './utils/sampleData';
 import {
   DndContext,
   closestCenter,
@@ -15,22 +13,29 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus } from 'lucide-react';
+import { Plus, Search, ListChecks } from 'lucide-react';
 import useQuestionStore from './store/useQuestionStore';
+import { fetchSampleData } from './utils/api';
 import Topic from './components/Topic';
 import Modal from './components/Modal';
-
+import { Reviser } from './components/Reviser';
+import { ReviewCalendar } from './components/ReviewCalendar';
 
 function App() {
-  // State for modal and input
   const [isAddingTopic, setIsAddingTopic] = useState(false);
   const [newTopicName, setNewTopicName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   
-  // Get state and actions from Zustand store
-  const { topics, setTopics, addTopic, reorderTopics } = useQuestionStore();
+  const { 
+    topics, 
+    setTopics, 
+    addTopic, 
+    reorderTopics, 
+    searchQuery, 
+    setSearchQuery, 
+    getFilteredTopics 
+  } = useQuestionStore();
 
-  // Setup drag and drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -38,70 +43,34 @@ function App() {
     })
   );
 
-  // Fetch data when app loads
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(
-          'https://node.codolio.com/api/question-tracker/v1/sheet/public/get-sheet-by-slug/striver-sde-sheet'
-        );
-        const data = await response.json();
-        
-        if (data.success && data.data && data.data.topics) {
-          // Transform API data to match your app's structure
-          const transformedTopics = data.data.topics.map((topic, index) => ({
-            id: topic._id || `topic-${index}`,
-            name: topic.topicName || topic.name,
-            order: topic.order || index,
-            subTopics: (topic.subTopics || []).map((st, stIndex) => ({
-              id: st._id || `subtopic-${index}-${stIndex}`,
-              name: st.subTopicName || st.name,
-              order: st.order || stIndex,
-              questions: (st.questions || []).map((q, qIndex) => ({
-                id: q._id || `question-${index}-${stIndex}-${qIndex}`,
-                title: q.questionName || q.title,
-                difficulty: q.difficulty,
-                link: q.link,
-                order: q.order || qIndex,
-                completed: q.completed || false
-              }))
-            }))
-          }));
-          
-          setTopics(transformedTopics);
-        } else {
-          // If API fails, start with empty state
-          setTopics([]);
+        if (topics.length === 0) {
+          const data = await fetchSampleData();
+          if (data) setTopics(data);
         }
       } catch (error) {
         console.error('Error loading data:', error);
-        // Fallback to empty state
-         data = sampleData;
-        setTopics([]);
       } finally {
         setIsLoading(false);
       }
     };
-
     loadData();
-  }, [setTopics]);
+  }, [setTopics, topics.length]);
 
-  // Handle drag end event
   const handleDragEnd = (event) => {
     const { active, over } = event;
-
     if (over && active.id !== over.id) {
       const oldIndex = topics.findIndex((t) => t.id === active.id);
       const newIndex = topics.findIndex((t) => t.id === over.id);
-
       if (oldIndex !== -1 && newIndex !== -1) {
         reorderTopics(arrayMove(topics, oldIndex, newIndex));
       }
     }
   };
 
-  // Handle adding a new topic
   const handleAddTopic = () => {
     if (newTopicName.trim()) {
       addTopic(newTopicName);
@@ -110,89 +79,122 @@ function App() {
     }
   };
 
-  // Show loading state
+  const filteredTopics = getFilteredTopics();
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="flex items-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <span className="text-xl text-gray-700">Loading questions...</span>
-          </div>
+      <div className="min-h-screen bg-[#FDFCF0] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF8C00]"></div>
+          <span className="text-lg font-bold text-gray-600">Syncing with Codolio...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Question Management System</h1>
-              <p className="text-gray-600 mt-1">Organize your questions by topics and sub-topics</p>
+    <div className="min-h-screen bg-[#FDFCF0] pb-20">
+      <header className="sticky top-0 z-30 bg-[#FDFCF0]/80 backdrop-blur-md border-b border-[#F5E6CC]">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#FF8C00] rounded-xl shadow-lg shadow-orange-100">
+              <ListChecks className="text-white" size={24} />
+            </div>
+            <h1 className="text-2xl font-black text-gray-800 tracking-tight">
+              CODOLIO <span className="text-[#FF8C00]">TRACKER</span>
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search topics or questions..."
+                className="pl-10 pr-4 py-2 bg-white border border-[#F5E6CC] rounded-xl focus:ring-2 focus:ring-[#FF8C00] outline-none w-full md:w-64 transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             <button
               onClick={() => setIsAddingTopic(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
+              className="bg-[#FF8C00] hover:bg-[#E67E00] text-white p-2.5 rounded-xl shadow-md transition-all active:scale-95"
             >
-              <Plus size={20} />
-              Add Topic
+              <Plus size={24} />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Topics List */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={topics.map(t => t.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {topics.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-md p-12 text-center">
-                <p className="text-gray-500 text-lg">No topics yet. Click "Add Topic" to get started!</p>
-              </div>
-            ) : (
-              topics.map((topic) => (
-                <Topic key={topic.id} topic={topic} />
-              ))
-            )}
-          </SortableContext>
-        </DndContext>
+      <main className="max-w-7xl mx-auto px-6 mt-8">
 
-        {/* Add Topic Modal */}
-        <Modal isOpen={isAddingTopic} onClose={() => setIsAddingTopic(false)} title="Add New Topic">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+
+          <div className="w-full lg:w-2/3 order-2 lg:order-1">
+            <Reviser />
+            
+            <div className="mt-8">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={filteredTopics.map(t => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {filteredTopics.length === 0 ? (
+                    <div className="bg-white border-2 border-dashed border-[#F5E6CC] rounded-3xl p-16 text-center">
+                      <p className="text-gray-400 font-medium">
+                        {searchQuery ? "No matching results found." : "Your sheet is empty. Add a topic to begin!"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {filteredTopics.map((topic) => (
+                        <Topic key={topic.id} topic={topic} />
+                      ))}
+                    </div>
+                  )}
+                </SortableContext>
+              </DndContext>
+            </div>
+          </div>
+
+          <aside className="w-full lg:w-1/3 order-1 lg:order-2 sticky top-28">
+            <ReviewCalendar />
+          </aside>
+        </div>
+      </main>
+
+      <Modal isOpen={isAddingTopic} onClose={() => setIsAddingTopic(false)} title="New Study Topic">
+        <div className="space-y-4">
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Topic Name</label>
           <input
             type="text"
             value={newTopicName}
             onChange={(e) => setNewTopicName(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 mb-4"
-            placeholder="Topic name (e.g., Arrays, Strings)"
+            className="w-full border border-[#F5E6CC] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#FF8C00] outline-none bg-white"
+            placeholder="e.g., Graphs, Recursion, System Design"
             onKeyPress={(e) => e.key === 'Enter' && handleAddTopic()}
             autoFocus
           />
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-3 justify-end mt-4">
             <button
               onClick={() => setIsAddingTopic(false)}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              className="px-6 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-xl"
             >
               Cancel
             </button>
             <button
               onClick={handleAddTopic}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-6 py-2 bg-[#FF8C00] text-white font-bold rounded-xl hover:bg-[#E67E00] shadow-lg shadow-orange-50 transition-all"
             >
-              Add
+              Create Topic
             </button>
           </div>
-        </Modal>
-      </div>
+        </div>
+      </Modal>
     </div>
   );
 }

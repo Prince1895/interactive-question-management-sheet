@@ -5,22 +5,23 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">{title}</h2>
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity">
+      <div className="bg-[#FDFCF0] rounded-xl shadow-2xl w-full max-w-md border border-[#F5E6CC] overflow-hidden transform transition-all scale-100">
+        <div className="flex justify-between items-center p-5 border-b border-[#F5E6CC] bg-white">
+          <h2 className="text-xl font-bold text-gray-800">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="p-1 rounded-full hover:bg-orange-100 text-gray-500 hover:text-[#FF8C00] transition-colors"
           >
-            <X size={20} />
+            <X size={22} />
           </button>
         </div>
-        {children}
+        <div className="p-6">
+          {children}
+        </div>
       </div>
     </div>
   );
 };
 
 export default Modal;
-
