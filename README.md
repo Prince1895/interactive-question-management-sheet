@@ -3,7 +3,7 @@
 An advanced, high-performance hierarchical Single Page Application (SPA) designed for students to organize, track, and master Data Structures and Algorithms (DSA) problems. Built with **React**, **Zustand**, and **Dnd-kit**, this tool integrates a sophisticated **Spaced Repetition (Reviser)** engine and a dynamic **Review Calendar**.
 
 ---
-### 🔗 [Live Demo Link]((https://interactive-question-management-she-theta.vercel.app/))
+### 🔗 [Live Demo Link](https://interactive-question-management-she-theta.vercel.app/)
 
 ---
 
