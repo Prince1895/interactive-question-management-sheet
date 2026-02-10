@@ -3,11 +3,11 @@
 An advanced, high-performance hierarchical Single Page Application (SPA) designed for students to organize, track, and master Data Structures and Algorithms (DSA) problems. Built with **React**, **Zustand**, and **Dnd-kit**, this tool integrates a sophisticated **Spaced Repetition (Reviser)** engine and a dynamic **Review Calendar**.
 
 ---
-### 🔗 [Live Demo Link](https://your-live-link-here.vercel.app)
+### 🔗 [Live Demo Link]([https://your-live-link-here.vercel.app](https://interactive-question-management-she-theta.vercel.app/))
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshot
 
 ![alt text](image.png)
 
@@ -108,6 +108,6 @@ src/
 * **Cross-Sheet Drag & Drop**: Ability to pick questions from a global "Master Bank" and drop them directly into your personal revision sheets.
 * **Must-Do Tagging**: Smart labeling for "High-Frequency" questions that appear across multiple famous curated lists (e.g., tagging a problem as "Essential" if it's in both Striver and Love Babbar).
 
-### ⚡ Productivity & Deep Work
+### Productivity & Deep Work
 * **Focus Mode**: A distraction-free UI overlay that hides everything except the current problem, integrated with a customizable .
 * **AI Hints**: Integrated **LLM (Large Language Model)** assistant to provide conceptual "nudges" and edge-case reminders without revealing the final solution.
